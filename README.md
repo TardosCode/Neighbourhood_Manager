@@ -60,9 +60,9 @@ The Statistics tab gives you the clan-wide picture:
 - Members flagged for warning or kick
 
 ### Other tools
-The app also includes a small **Expansion Helper** for tracking what
-land/barn/silo expansions you have unlocked, separately from the
-neighborhood manager.
+The app also includes a small **Expansion Helper** for tracking silo / barn upgrades.
+
+More tools are coming soon.
 
 ## Install & run
 
@@ -134,6 +134,7 @@ neighbourhood-manager/
 ├── profiles/      # per-profile data (gitignored)
 ├── neighborhoods/ # per-clan data (gitignored)
 ├── settings/      # global settings (gitignored)
+├── screenshots/   # screenshots of the UI
 ├── src/           # Python source code
 ├── build_exe.bat  # Windows .exe build script
 ├── requirements.txt
