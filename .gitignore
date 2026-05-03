@@ -1,0 +1,62 @@
+# ====== User-specific data (NEVER commit) ======
+# Personal clan data, profiles, and settings should not be uploaded.
+# Each user generates their own when they run the app.
+profiles/*.json
+neighborhoods/*.json
+settings/*.json
+
+# Active selection markers
+profiles/_active.json
+neighborhoods/_active.json
+
+# ====== Background music (user-provided) ======
+# Music files shouldn't be in the repo (copyright + size).
+# Users drop their own .mp3 files into audio/music/.
+audio/music/*.mp3
+audio/music/*.wav
+audio/music/*.ogg
+
+# But keep a placeholder file so the folder is preserved
+!audio/music/.gitkeep
+
+# ====== Python ======
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# PyInstaller
+*.spec.bak
+*.exe.manifest
+
+# ====== IDE / Editor ======
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ====== Test / coverage ======
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# ====== Logs ======
+*.log
