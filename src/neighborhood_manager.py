@@ -131,6 +131,10 @@ def default_neighborhood_data(clan_name: str = "", clan_tag: str = "",
         # Manual activity-score adjustments. Each entry:
         # {id, member_id, points: int, comment, created_at}
         "manual_activity_bonuses": [],
+        # Saved derby plans (see derby_planner.py). Each entry:
+        # {plan_id, name, created_at, derby_date, target_points,
+        #  member_ids, notes}
+        "derby_plans": [],
         # Persisted UI preferences (per-clan). Keys are arbitrary strings;
         # callers should namespace with the screen name.
         # e.g. "members.show_former" -> bool
@@ -205,6 +209,8 @@ class NeighborhoodManager:
             data["activity_rules"] = [dict(r) for r in DEFAULT_ACTIVITY_RULES]
         if "manual_activity_bonuses" not in data:
             data["manual_activity_bonuses"] = []
+        if "derby_plans" not in data:
+            data["derby_plans"] = []
         if "ui_prefs" not in data:
             data["ui_prefs"] = {}
         # ensure every member has a 'role' field; old members default to Member

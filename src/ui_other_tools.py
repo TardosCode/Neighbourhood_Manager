@@ -69,17 +69,17 @@ class OtherToolsFrame(tk.Frame):
                  bg=THEME["bg_main"], fg=THEME["text_muted"]
                  ).pack(pady=(8, 0))
 
-        # placeholder for future tools
+        # derby planner tool
         col2 = tk.Frame(grid, bg=THEME["bg_main"])
         col2.grid(row=0, column=1, padx=12, pady=12)
         RoundedButton(
-            col2, text="More tools coming soon...",
-            command=None, disabled=True,
+            col2, text="🏇  Derby Planner",
+            command=lambda: self.app.show_frame("DerbyPlanner"),
             width=320, height=70,
-            bg_color=THEME["btn_grey"], hover_color=THEME["btn_grey_hover"],
+            bg_color=THEME["btn_green"], hover_color=THEME["btn_green_hover"],
             font=THEME["font_button_big"]
         ).pack()
-        tk.Label(col2, text=" ",
+        tk.Label(col2, text="Plan & predict your next derby lineup",
                  font=THEME["font_body"],
                  bg=THEME["bg_main"], fg=THEME["text_muted"]
                  ).pack(pady=(8, 0))

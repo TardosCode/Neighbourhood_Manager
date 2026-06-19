@@ -59,8 +59,26 @@ The Statistics tab gives you the clan-wide picture:
 - Donations trend chart (clan-wide weekly throughput)
 - Members flagged for warning or kick
 
+### Derby Planner & Predictor
+Plan your next derby from your own recorded history. The planner builds a
+**dependability profile** for every member — participation rate, average and
+*expected* points (average discounted by how often they actually show up),
+consistency, and a trend — then sorts the roster by who contributes most.
+
+- Tick members in or out and watch the **predicted points** update live, with
+  an optimistic ceiling and expected task-completion %.
+- Each member gets a **risk tier**: Reliable / Inconsistent / Risky / Unknown.
+- Set a points target and hit **Auto-pick best lineup** to fill the most
+  dependable roster that reaches it.
+- **Save lineups as plans** — they persist with the clan and can be reloaded
+  later.
+
+See [`docs/derby_planner.md`](docs/derby_planner.md) for the full method.
+
 ### Other tools
-The app also includes a small **Expansion Helper** for tracking silo / barn upgrades.
+The app also includes a small **Expansion Helper** for tracking silo / barn
+upgrades, and the **Derby Planner** described above. Both live under
+**Other tools** in the main menu.
 
 More tools are coming soon.
 
@@ -136,10 +154,28 @@ neighbourhood-manager/
 ├── settings/      # global settings (gitignored)
 ├── screenshots/   # screenshots of the UI
 ├── src/           # Python source code
+├── tests/         # pytest suite for the pure-logic layer
+├── docs/          # design notes (e.g. Derby Planner)
 ├── build_exe.bat  # Windows .exe build script
 ├── requirements.txt
+├── requirements-dev.txt
 └── README.md
 ```
+
+## Development & tests
+
+The app's business logic lives in pure modules under `src/` (no GUI or disk
+dependencies) and is covered by a `pytest` suite in `tests/`. The GUI layer
+(Tkinter) is intentionally not exercised in tests, since CI runners are
+headless.
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+Tests run automatically on every push and pull request via GitHub Actions
+(`.github/workflows/ci.yml`) across Python 3.10–3.12.
 
 ## License
 
