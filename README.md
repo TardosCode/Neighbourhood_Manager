@@ -28,6 +28,14 @@ A clean two-step workflow lets you first pick which members the snapshot
 covers, then fill in their data — the second step only shows the members
 you selected.
 
+**📷 Import derby results from a screenshot.** Instead of typing a whole derby
+in by hand, snap the in-game **Derby Task Log**, then **New Snapshot → Import
+derby screenshot**. The app reads each `Name — X/Y — Points` row (via local
+OCR, or just paste the text), fuzzy-matches farm names to your members, flags
+anything that looks misread, and pre-fills the snapshot for review. Nothing is
+uploaded — it all runs locally. See
+[`docs/screenshot_import.md`](docs/screenshot_import.md).
+
 ### Activity score system
 Members earn activity points based on five metrics:
 

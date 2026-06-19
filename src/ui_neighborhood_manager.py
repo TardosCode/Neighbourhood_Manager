@@ -186,6 +186,20 @@ class NeighborhoodManagerFrame(tk.Frame):
                  bg=THEME["bg_main"], fg=THEME["text_muted"]).pack(pady=80)
         return f
 
+    def open_imported_snapshot(self, prefill):
+        """Open a NEW snapshot prefilled from a screenshot import.
+
+        Clears the content area and shows a NewSnapshotTab seeded with the
+        parsed prefill (editing=False → Save creates a brand-new snapshot).
+        """
+        for child in self.content.winfo_children():
+            child.destroy()
+        self.current_tab = "New Snapshot"
+        self._highlight_tab("New Snapshot")
+        tab = NewSnapshotTab(self.content, manager=self,
+                             prefill_snapshot=prefill, editing=False)
+        tab.pack(fill="both", expand=True)
+
     def refresh_current_tab(self):
         """Re-render the current tab from disk. Used after edits in dialogs."""
         if self.current_tab:
