@@ -1,0 +1,4 @@
+# Development / test dependencies.
+# Runtime deps are in requirements.txt. The pure-logic test suite only needs
+# pytest — the GUI (Tkinter/Pillow/matplotlib/pygame) is not exercised in tests.
+pytest>=7.4
