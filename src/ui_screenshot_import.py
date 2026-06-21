@@ -93,7 +93,11 @@ class ScreenshotImportDialog(tk.Toplevel):
                       ).pack(side="left", padx=(10, 0))
 
         tk.Label(sec,
-                 text=("No Tesseract? On your phone, copy the text from the "
+                 text=("Doesn't all fit in one screenshot? Add them one after "
+                       "another — each Load (or paste) stacks onto the text "
+                       "below, and members that appear on two overlapping "
+                       "screenshots are merged automatically on Parse.\n"
+                       "No Tesseract? On your phone, copy the text from the "
                        "screenshot (Google Lens / built-in text selection) and "
                        "paste it below."),
                  font=THEME["font_body"],
@@ -150,8 +154,13 @@ class ScreenshotImportDialog(tk.Toplevel):
         finally:
             self.config(cursor="")
 
-        self.text_box.delete("1.0", "end")
-        self.text_box.insert("1.0", text)
+        # Append (don't replace): the user may load several screenshots to
+        # cover a full neighbourhood. A separator keeps rows on their own lines.
+        existing = self.text_box.get("1.0", "end").strip()
+        if existing:
+            self.text_box.insert("end", "\n" + text)
+        else:
+            self.text_box.insert("1.0", text)
 
     def _on_parse(self):
         text = self.text_box.get("1.0", "end")
@@ -166,9 +175,13 @@ class ScreenshotImportDialog(tk.Toplevel):
             )
             return
 
+        # Fold together the same farm appearing on overlapping screenshots
+        # before matching, so each member shows up once in the review.
+        rows, n_merged = derby_ocr.merge_duplicate_rows(rows)
+
         self._members = self.manager.reload_data()["members"]
         matched = derby_ocr.match_rows_to_members(rows, self._members)
-        self._render_review(matched, result)
+        self._render_review(matched, result, n_merged=n_merged)
 
     # =================================================================
     # SECTION B — review & match
@@ -193,7 +206,7 @@ class ScreenshotImportDialog(tk.Toplevel):
                  fg=THEME["text_muted"], wraplength=820, justify="left"
                  ).pack(anchor="w", padx=8, pady=40)
 
-    def _render_review(self, matched, result):
+    def _render_review(self, matched, result, n_merged=0):
         self._review_rows = []
         inner = self._review_scroll.inner
         for child in inner.winfo_children():
@@ -203,6 +216,16 @@ class ScreenshotImportDialog(tk.Toplevel):
                  font=THEME["font_subheading"],
                  bg=THEME["bg_main"], fg=THEME["text_dark"]
                  ).pack(side="top", anchor="w", padx=8, pady=(8, 4))
+
+        # note when overlapping screenshots were de-duplicated
+        if n_merged:
+            tk.Label(inner,
+                     text=(f"🔁 Merged {n_merged} duplicate row(s) from "
+                           "overlapping screenshots — each member appears once "
+                           "below. Double-check if two members share a name."),
+                     font=THEME["font_body"], bg=THEME["bg_main"],
+                     fg=THEME["text_muted"], wraplength=820, justify="left"
+                     ).pack(side="top", anchor="w", padx=8, pady=(0, 4))
 
         # member-name options for the picker (alphabetical), plus the skip entry
         member_names = sorted(

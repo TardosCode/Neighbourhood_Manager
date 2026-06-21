@@ -114,6 +114,77 @@ def test_validate_row_flags_anomalies():
 
 
 # --------------------------------------------------------------------------
+# merging duplicate rows across multiple / overlapping screenshots
+# --------------------------------------------------------------------------
+
+def _row(name, done, tmax, points):
+    return {"name": name, "tasks_done": done, "tasks_max": tmax,
+            "points": points, "raw": "", "warnings": []}
+
+
+def test_merge_identical_duplicate():
+    rows = [_row("Jeydi", 5, 8, 1180), _row("Jeydi", 5, 8, 1180)]
+    merged, n = ocr.merge_duplicate_rows(rows)
+    assert n == 1
+    assert len(merged) == 1
+    assert merged[0]["points"] == 1180
+    assert merged[0]["merged_count"] == 2
+
+
+def test_merge_keeps_richer_reading():
+    # second screenshot caught the row cut off (lower / partial values);
+    # the fuller reading must win
+    rows = [_row("Sentos", 7, 8, 1244), _row("Sentos", 3, 8, 600)]
+    merged, n = ocr.merge_duplicate_rows(rows)
+    assert n == 1
+    assert merged[0]["tasks_done"] == 7
+    assert merged[0]["points"] == 1244
+
+
+def test_merge_normalizes_decoration():
+    # same farm, different emoji/punctuation noise across two screenshots
+    rows = [_row("🌾Jeydi", 5, 8, 1180), _row("Jeydi⭐", 5, 8, 1180)]
+    merged, n = ocr.merge_duplicate_rows(rows)
+    assert n == 1 and len(merged) == 1
+
+
+def test_merge_leaves_distinct_members():
+    rows = [_row("Jeydi", 5, 8, 1180), _row("Sentos", 7, 8, 1244)]
+    merged, n = ocr.merge_duplicate_rows(rows)
+    assert n == 0
+    assert len(merged) == 2
+
+
+def test_merge_recomputes_warnings():
+    # a clean row plus a corrupt duplicate whose max would breach bounds
+    rows = [_row("Alice", 8, 8, 2000), _row("Alice", 8, 8, 99999)]
+    merged, n = ocr.merge_duplicate_rows(rows)
+    assert merged[0]["points"] == 99999
+    assert merged[0]["warnings"]      # the merged value is flagged
+
+
+def test_two_overlapping_screenshots_end_to_end():
+    """Two screenshots that share one row -> no double counting downstream."""
+    shot1 = "You (Tardos) 9/9 2791\nBelaki farm 8/8 2553\nJeydi 5/8 1180"
+    shot2 = "Jeydi 5/8 1180\nSentos 7/8 1244"   # Jeydi overlaps
+    combined = shot1 + "\n" + shot2
+
+    rows = ocr.parse_task_log(combined)["rows"]
+    assert len(rows) == 5                         # Jeydi parsed twice
+    merged, n = ocr.merge_duplicate_rows(rows)
+    assert n == 1
+    names = [r["name"] for r in merged]
+    assert names.count("Jeydi") == 1              # collapsed to one
+
+    members = _members("Tardos", "Belaki farm", "Jeydi", "Sentos")
+    matched = ocr.match_rows_to_members(merged, members)
+    snap = ocr.build_prefill_snapshot(matched, "2026-06-19")
+    # exactly one entry per member, no duplicates
+    ids = [e["member_id"] for e in snap["entries"]]
+    assert len(ids) == len(set(ids)) == 4
+
+
+# --------------------------------------------------------------------------
 # matching to members
 # --------------------------------------------------------------------------
 
