@@ -42,6 +42,25 @@ pip install -r requirements-ocr.txt        # pytesseract (Pillow is already a de
 
 If Tesseract isn't found, the importer just tells you and falls back to paste.
 
+## Multiple screenshots & overlapping rows
+
+A neighbourhood often doesn't fit in one screenshot. You can add several:
+
+- **Load** (or paste) each screenshot in turn — they **stack** in the text box
+  rather than replacing what's there. Load shot 1, then shot 2, then press Parse
+  once.
+- When two screenshots **overlap** (the same member shows up on both because the
+  list scrolled), the importer **merges those duplicates automatically** before
+  the review table — each member appears exactly once. The fuller reading wins
+  (so a row clipped at a screenshot edge can't override the complete one), and a
+  note tells you how many duplicates were merged.
+- Even if a duplicate slipped through, there's no double-counting: member
+  matching is **one-to-one** (a member binds to a single row), and the final
+  snapshot is keyed by member, so a member can only appear once.
+- The one caveat the note reminds you of: if **two different members genuinely
+  share a display name**, they'd be merged — check the review table in that
+  (rare) case and fix it by hand.
+
 ## How matching works
 
 - Names are normalized (emoji/punctuation stripped, case-folded) and compared to

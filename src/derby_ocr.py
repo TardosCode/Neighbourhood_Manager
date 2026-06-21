@@ -217,6 +217,46 @@ def _member_name_index(members: dict) -> dict:
     return index
 
 
+# ----- merging duplicate rows (multiple / overlapping screenshots) ----------
+
+def merge_duplicate_rows(rows: list) -> tuple:
+    """Collapse rows that refer to the same farm by normalized name.
+
+    A neighbourhood's task log often doesn't fit in one screenshot, so the user
+    pastes/loads several. Where they overlap, the same member appears twice.
+    This folds those into one row: since the values describe the *same* final
+    standings, the richer reading wins (max of tasks_done / tasks_max / points),
+    so a row that got cut off at a screenshot edge can never beat the full one.
+
+    Returns ``(merged_rows, n_merged)`` where ``n_merged`` is how many duplicate
+    rows were absorbed. Order follows first appearance, and each surviving row
+    gains a ``merged_count`` (1 = seen once). Rows whose name can't be
+    normalized (OCR garbage) are never merged — they're kept as-is so nothing is
+    silently lost.
+    """
+    merged = []
+    index_by_key = {}
+    n_merged = 0
+    for row in rows:
+        key = normalize_name(row["name"])
+        if key and key in index_by_key:
+            n_merged += 1
+            target = merged[index_by_key[key]]
+            target["tasks_done"] = max(target["tasks_done"], row["tasks_done"])
+            target["tasks_max"] = max(target["tasks_max"], row["tasks_max"])
+            target["points"] = max(target["points"], row["points"])
+            target["merged_count"] = target.get("merged_count", 1) + 1
+            target["warnings"] = validate_row(
+                target["tasks_done"], target["tasks_max"], target["points"])
+        else:
+            new = dict(row)
+            new["merged_count"] = 1
+            if key:
+                index_by_key[key] = len(merged)
+            merged.append(new)
+    return merged, n_merged
+
+
 def match_rows_to_members(rows: list, members: dict,
                           threshold: float = DEFAULT_MATCH_THRESHOLD) -> list:
     """Attach a best-guess member to each parsed row.
