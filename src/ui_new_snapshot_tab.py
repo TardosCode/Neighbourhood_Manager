@@ -39,12 +39,18 @@ from neighborhood_manager import (
 
 
 class NewSnapshotTab(tk.Frame):
-    def __init__(self, parent, manager, prefill_snapshot: dict = None):
+    def __init__(self, parent, manager, prefill_snapshot: dict = None,
+                 editing: bool = None):
         super().__init__(parent, bg=THEME["bg_main"])
         self.manager = manager
         self.data = manager.reload_data()
         self.prefill = prefill_snapshot
-        self.is_editing = prefill_snapshot is not None
+        self.has_prefill = prefill_snapshot is not None
+        # `editing` distinguishes "edit this existing snapshot" (Save updates it)
+        # from "prefill a brand-new snapshot" (Save creates it) — the latter is
+        # used by the screenshot importer. When unspecified, having a prefill
+        # implies editing, preserving the original behavior.
+        self.is_editing = self.has_prefill if editing is None else editing
 
         # the active step: 1 = select members, 2 = fill data
         self.step = 1
@@ -54,7 +60,7 @@ class NewSnapshotTab(tk.Frame):
 
         # selection state shared between the two steps
         # member_id -> bool (True if included in this snapshot)
-        if self.is_editing:
+        if self.has_prefill:
             self.selected = {e["member_id"]: True
                              for e in prefill_snapshot["entries"]}
         else:
@@ -68,19 +74,19 @@ class NewSnapshotTab(tk.Frame):
         self.row_state = {}
 
         # the date/type/comment - shared form state
-        default_date = (self.prefill["date"] if self.is_editing
+        default_date = (self.prefill["date"] if self.has_prefill
                         else date.today().isoformat())
-        default_type = (self.prefill["type"] if self.is_editing
+        default_type = (self.prefill["type"] if self.has_prefill
                         else SNAPSHOT_TYPE_AFTER_DERBY)
         default_comment = (self.prefill.get("derby_comment", "")
-                           if self.is_editing else "")
+                           if self.has_prefill else "")
         self.var_date = tk.StringVar(value=default_date)
         self.var_type = tk.StringVar(value=default_type)
         self.var_derby_comment = tk.StringVar(value=default_comment)
 
         # filter / search state on step 1
         self.var_show_in_clan = tk.BooleanVar(value=True)
-        self.var_show_out_of_clan = tk.BooleanVar(value=self.is_editing)
+        self.var_show_out_of_clan = tk.BooleanVar(value=self.has_prefill)
         self.search_query = ""
 
         self._render()
@@ -150,6 +156,14 @@ class NewSnapshotTab(tk.Frame):
                        activebackground=THEME["bg_panel"],
                        selectcolor=THEME["bg_card"]
                        ).pack(side="left")
+
+        RoundedButton(row, text="📷 Import derby screenshot",
+                      command=self._open_screenshot_import,
+                      width=210, height=28,
+                      bg_color=THEME["btn_blue"],
+                      hover_color=THEME["btn_blue_hover"],
+                      font=("Arial", 10, "bold"), radius=8
+                      ).pack(side="right", padx=(12, 2))
 
         RoundedButton(row, text="Check all visible",
                       command=lambda: self._set_all_visible(True),
@@ -233,6 +247,13 @@ class NewSnapshotTab(tk.Frame):
                           bg_color=THEME["btn_grey"],
                           hover_color=THEME["btn_grey_hover"]
                           ).pack(side="right", padx=10)
+
+    def _open_screenshot_import(self):
+        """Launch the screenshot-import dialog; on confirm it hands a prefill
+        snapshot to the manager, which opens it in a fresh New Snapshot tab."""
+        from ui_screenshot_import import ScreenshotImportDialog
+        ScreenshotImportDialog(self, self.manager,
+                               on_done=self.manager.open_imported_snapshot)
 
     def _on_search_change(self, query):
         self.search_query = query.lower()
@@ -499,7 +520,7 @@ class NewSnapshotTab(tk.Frame):
         ))
 
         prefill_by_id = {}
-        if self.is_editing:
+        if self.has_prefill:
             for e in self.prefill["entries"]:
                 prefill_by_id[e["member_id"]] = e
 
@@ -605,9 +626,9 @@ class NewSnapshotTab(tk.Frame):
         if "tasks_max" in existing:
             max_default = existing["tasks_max"].get()
         elif prefill is not None:
-            max_default = str(prefill.get("tasks_max", 12))
+            max_default = str(prefill.get("tasks_max", 8))
         else:
-            max_default = "12"
+            max_default = "8"
         var_tasks_max = tk.StringVar(value=max_default)
 
         if "points" in existing:
@@ -916,7 +937,7 @@ class NewSnapshotTab(tk.Frame):
                             errors.append(f"Tasks not a number for {member_id}")
                             continue
                         try:
-                            entry["tasks_max"] = int(st["tasks_max"].get() or 12)
+                            entry["tasks_max"] = int(st["tasks_max"].get() or 8)
                         except ValueError:
                             errors.append(f"Tasks max not a number for {member_id}")
                             continue
@@ -927,7 +948,7 @@ class NewSnapshotTab(tk.Frame):
                             continue
                     else:
                         entry["tasks_done"] = 0
-                        entry["tasks_max"] = int(st["tasks_max"].get() or 12)
+                        entry["tasks_max"] = int(st["tasks_max"].get() or 8)
                         entry["derby_points"] = 0
 
             entries.append(entry)

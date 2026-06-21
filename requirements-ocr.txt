@@ -1,0 +1,8 @@
+# Optional: direct OCR of derby screenshots.
+# Pillow is already a runtime dependency (see requirements.txt). pytesseract is
+# a thin wrapper that also needs the Tesseract engine installed separately:
+#   Windows: https://github.com/UB-Mannheim/tesseract/wiki
+#   macOS:   brew install tesseract
+#   Ubuntu:  sudo apt install tesseract-ocr
+# Without these, the screenshot importer still works via manual text paste.
+pytesseract>=0.3.10

@@ -28,6 +28,7 @@ from ui_neighborhood_manager import NeighborhoodManagerFrame
 from ui_member_detail import MemberDetailFrame
 from ui_app_settings import AppSettingsFrame
 from ui_other_tools import OtherToolsFrame
+from ui_derby_planner import DerbyPlannerFrame
 from theme import THEME
 
 
@@ -185,6 +186,8 @@ class HayDayHelperApp(tk.Tk):
                                       initial_section=initial_section)
         elif name == "OtherTools":
             frame = OtherToolsFrame(self.container, app=self)
+        elif name == "DerbyPlanner":
+            frame = DerbyPlannerFrame(self.container, app=self)
         else:
             raise ValueError(f"Unknown frame: {name}")
 
